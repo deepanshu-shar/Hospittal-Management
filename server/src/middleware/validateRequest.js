@@ -1,0 +1,13 @@
+import { validationResult } from 'express-validator';
+
+export const validateRequest = (validations) => async (req, res, next) => {
+  await Promise.all(validations.map((validation) => validation.run(req)));
+
+  const errors = validationResult(req);
+  if (errors.isEmpty()) {
+    return next();
+  }
+
+  const formatted = errors.array().map((error) => ({ field: error.param, message: error.msg }));
+  return res.status(400).json({ message: 'Validation failed.', errors: formatted });
+};
